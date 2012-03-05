@@ -38,6 +38,7 @@
 - (UIImage*)scaledImageJustifiedLeft:(UIImage*)image;
 - (void)setLoading:(BOOL)isLoading;
 - (void)configureActivityIndicatorView;
+- (void)layoutActivityIndicator;
 
 @end
 
@@ -96,10 +97,14 @@
     
     self.imageURLString = aString;
     self.image = nil;
-    
+        
     UIImage *anImage = [[FullyLoaded sharedFullyLoaded] imageForURLString:self.imageURLString];
     if (anImage != nil) {
         [self populateImage:anImage];
+        
+    // always set loading to NO to make sure the indicator wont show when reusing the view
+        if (self.showsLoadingActivity)
+            [self setLoading:NO];
     }
     else {
         [self populateImage:placeholderImage];
@@ -142,6 +147,24 @@
     }
 }
 
+- (void)layoutSubviews {
+ 
+    [super layoutSubviews];
+    
+    [self layoutActivityIndicator];
+}
+
+- (void)layoutActivityIndicator {
+    
+    if (!self.activityIndicatorView)
+        return;
+    
+    // center the indicator
+    CGRect activityIndicatorFrame = self.activityIndicatorView.frame;
+    activityIndicatorFrame.origin.x = (int)((self.frame.size.width / 2.f) - (activityIndicatorFrame.size.width / 2.f));
+    activityIndicatorFrame.origin.y = (int)((self.frame.size.height / 2.f) - (activityIndicatorFrame.size.height / 2.f));
+    self.activityIndicatorView.frame = activityIndicatorFrame;
+}
 
 #pragma mark - Private
 
@@ -219,11 +242,7 @@
     self.activityIndicatorView = 
     [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray] autorelease];
     
-    // center the indicator
-    CGRect activityIndicatorFrame = self.activityIndicatorView.frame;
-    activityIndicatorFrame.origin.x = (self.frame.size.width / 2.f) - (activityIndicatorFrame.size.width / 2.f);
-    activityIndicatorFrame.origin.y = (self.frame.size.height / 2.f) - (activityIndicatorFrame.size.height / 2.f);
-    self.activityIndicatorView.frame = activityIndicatorFrame;
+    [self layoutActivityIndicator];
     
     self.activityIndicatorView.hidesWhenStopped = YES;
     
