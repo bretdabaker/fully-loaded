@@ -122,7 +122,8 @@ urlQueue        = _urlQueue,
 pendingURLSet   = _pendingURLSet,
 responseQueue   = _responseQueue,
 connectionCount = _connectionCount,
-suspended       = _suspended;
+suspended       = _suspended,
+capacity        = _capacity;
 
 
 - (void)dealloc {
@@ -154,6 +155,8 @@ suspended       = _suspended;
         // deleted, UIImage can't restore itself and UIImageView will end up showing a black image. To combat this
         // we delete the in-memory cache whenever the app is backgrounded.
         [c addObserver:self selector:@selector(emptyCache) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        
+        _capacity = 0;
     }
     return self;
 }
@@ -375,6 +378,12 @@ suspended       = _suspended;
     
     if (image) {
         @synchronized(self.imageCache) {
+            
+            if (self.capacity && [self.imageCache count] > self.capacity){
+                
+                [self.imageCache removeObjectForKey:[[self.imageCache allKeys] objectAtIndex:0]];
+            }
+            
             [self.imageCache setObject:image forKey:url];
         }
     }
