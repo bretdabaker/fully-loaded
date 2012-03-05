@@ -32,6 +32,11 @@
 
 @interface FullyLoaded : NSObject
 
+// If you load lots of big images you need to control the number of images in memory. 
+// defaults to 0. If set > 0 && [self.imageCache count] >= self.capacity
+// the oldest image in the memory will be removed before a new one is added.
+@property (nonatomic) NSUInteger capacity;
+
 + (FullyLoaded *)sharedFullyLoaded;
 
 - (void)emptyCache;
